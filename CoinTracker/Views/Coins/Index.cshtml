@@ -1,0 +1,38 @@
+﻿@model IEnumerable<CoinTracker.Models.Coin>
+
+@{
+    ViewData["Title"] = "Coins";
+}
+
+<h2>My Coins</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Year</th>
+            <th>Mint</th>
+            <th>Grade</th>
+            <th>Denomination</th>
+            <th>Reference</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var coin in Model)
+        {
+            <tr>
+                <td>@coin.Name</td>
+                <td>@coin.Year</td>
+                <td>@coin.Mint</td>
+                <td>@coin.Grade</td>
+                <td>@coin.Denomination</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(coin.ReferenceUrl))
+                    {
+                        <a href="@coin.ReferenceUrl" target="_blank">USA Coin Book</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

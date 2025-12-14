@@ -1,0 +1,62 @@
+﻿@model CoinTracker.Models.Coin
+
+@{
+    ViewData["Title"] = "Add Coin";
+}
+
+<h2>Add Coin</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Year" class="form-label"></label>
+        <input asp-for="Year" class="form-control" />
+        <span asp-validation-for="Year" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Mint" class="form-label"></label>
+        <input asp-for="Mint" class="form-control" />
+        <span asp-validation-for="Mint" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Grade" class="form-label"></label>
+        <input asp-for="Grade" class="form-control" />
+        <span asp-validation-for="Grade" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Denomination" class="form-label"></label>
+        <input asp-for="Denomination" class="form-control" />
+        <span asp-validation-for="Denomination" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ReferenceUrl" class="form-label"></label>
+        <input asp-for="ReferenceUrl" class="form-control" />
+        <span asp-validation-for="ReferenceUrl" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Notes" class="form-label"></label>
+        <textarea asp-for="Notes" class="form-control"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
