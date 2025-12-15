@@ -1,10 +1,51 @@
-﻿<h2>Admin Panel</h2>
+﻿@model List<CoinTracker.Models.ViewModels.UserRoleViewModel>
 
-<ul class="list-group">
-    <li class="list-group-item">
-        <a asp-controller="Coins" asp-action="Import">Import Coins (Excel)</a>
-    </li>
-    <li class="list-group-item">
-        <a asp-controller="Coins" asp-action="Create">Add Coin</a>
-    </li>
-</ul>
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<h2>User Management</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Admin</th>
+            <th>User</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+
+                <!-- ADMIN ROLE -->
+                <td>
+                    <form asp-action="UpdateRole" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@user.UserId" />
+                        <input type="hidden" name="role" value="Admin" />
+                        <input type="hidden" name="isInRole" value="@(!user.Roles.Contains("Admin"))" />
+                        <button class="btn btn-sm @(user.Roles.Contains("Admin") ? "btn-danger" : "btn-success")">
+                            @(user.Roles.Contains("Admin") ? "Remove" : "Add")
+                        </button>
+                    </form>
+                </td>
+
+                <!-- USER ROLE -->
+                <td>
+                    <form asp-action="UpdateRole" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@user.UserId" />
+                        <input type="hidden" name="role" value="User" />
+                        <input type="hidden" name="isInRole" value="@(!user.Roles.Contains("User"))" />
+                        <button class="btn btn-sm @(user.Roles.Contains("User") ? "btn-danger" : "btn-success")">
+                            @(user.Roles.Contains("User") ? "Remove" : "Add")
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -70,11 +70,6 @@
                             </a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Admin" asp-action="Index">
-                                Admin Panel
-                            </a>
-                        </li>
                     }
 
                     <!-- Search Bar -->
@@ -90,6 +85,15 @@
                                 style="width: 200px;">
                                 <button class="btn btn-outline-light btn-sm" type="submit">Search</button>
                             </form>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Admin" asp-action="Index">
+                                Admin Panel
+                            </a>
                         </li>
                     }
 

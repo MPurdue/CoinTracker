@@ -4,24 +4,17 @@ using CoinTracker.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------------------
 // Database (SQL Server)
 // ----------------------------
-var useDb = builder.Configuration.GetValue<bool>("UseDatabase");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
-if (useDb)
-{
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnection")));
-}
-
-
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+// We are NOT using EF migrations
 
 // ----------------------------
 // Identity
@@ -37,7 +30,6 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 // MVC + Cache
 // ----------------------------
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
 builder.Services.AddMemoryCache();
 
 // ----------------------------
@@ -64,44 +56,22 @@ builder.Services.AddScoped<IPriceService, PriceService>();
 var app = builder.Build();
 
 // ----------------------------
-// Azure Forwarded Headers
-// ----------------------------
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
-
-// ----------------------------
 // Middleware
 // ----------------------------
-if (app.Environment.IsDevelopment())
-{
-    app.UseMigrationsEndPoint();
-}
-else
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
+// No migrations. Database already exists.
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ----------------------------
-// Role Seeding (CRITICAL)
-// ----------------------------
-using (var scope = app.Services.CreateScope())
-{
-    await IdentitySeed.SeedRolesAsync(scope.ServiceProvider);
-}
-
-// ----------------------------
-// Routing
-// ----------------------------
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
