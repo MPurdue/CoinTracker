@@ -1,23 +1,27 @@
-﻿@{
+﻿@model CoinTracker.Models.ViewModels.CoinImportViewModel
+
+@{
     ViewData["Title"] = "Import Coins";
 }
 
 <h2>Import Coins from Excel</h2>
 
 <form asp-action="Import" method="post" enctype="multipart/form-data">
-    @Html.AntiForgeryToken()
-
     <div class="mb-3">
-        <label class="form-label">Excel File (.xlsx)</label>
-        <input type="file" name="file" class="form-control" required />
+        <label asp-for="ExcelFile" class="form-label"></label>
+        <input asp-for="ExcelFile" type="file" class="form-control" />
+        <span asp-validation-for="ExcelFile" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Import</button>
+    <button type="submit" class="btn btn-primary">
+        Import
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancel
+    </a>
 </form>
 
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="text-danger mt-2">
-        @Html.ValidationSummary()
-    </div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

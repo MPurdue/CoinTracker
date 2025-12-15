@@ -1,17 +1,15 @@
-﻿using CoinTracker.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using CoinTracker.Models;
 
-
-namespace CoinTracker.Data;
-
-
-public class ApplicationDbContext : IdentityDbContext
+namespace CoinTracker.Data
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : base(options) { }
+    public class ApplicationDbContext : IdentityDbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options) { }
 
-
-    public DbSet<Coin> Coins => Set<Coin>();
-    public DbSet<CoinPrice> CoinPrices => Set<CoinPrice>();
+        public DbSet<Coin> Coins { get; set; }
+        public DbSet<CoinPrice> CoinPrices { get; set; }
+    }
 }

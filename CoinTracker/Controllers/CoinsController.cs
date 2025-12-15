@@ -1,62 +1,94 @@
 using CoinTracker.Models;
+using CoinTracker.Models.ViewModels;
 using CoinTracker.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OfficeOpenXml;
+using ClosedXML.Excel;
 
-namespace CoinTracker.Controllers;
-
-public class CoinsController : Controller
+namespace CoinTracker.Controllers
 {
-    private readonly ICoinRepository _repo;
-
-    public CoinsController(ICoinRepository repo)
+    [Authorize]
+    public class CoinsApiController : Controller
     {
-        _repo = repo;
-    }
+        private readonly ICoinRepository _repo;
 
-    public async Task<IActionResult> Index()
-    {
-        return View(await _repo.GetAllAsync());
-    }
-
-    [Authorize(Roles = "Admin")]
-    public IActionResult Import()
-    {
-        return View();
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Import(IFormFile file)
-    {
-        if (file == null || file.Length == 0)
+        public CoinsApiController(ICoinRepository repo)
         {
-            ModelState.AddModelError("", "Please upload an Excel file.");
+            _repo = repo;
+        }
+
+        // GET: /Coins
+        [AllowAnonymous]
+        public async Task<IActionResult> Index()
+        {
+            var coins = await _repo.GetAllAsync();
+            return View(coins);
+        }
+
+        // GET: /Coins/Create
+        [Authorize(Roles = "Admin")]
+        public IActionResult Create()
+        {
             return View();
         }
 
-        using var stream = file.OpenReadStream();
-        using var package = new ExcelPackage(stream);
-        var worksheet = package.Workbook.Worksheets[0];
-
-        for (int row = 2; row <= worksheet.Dimension.Rows; row++)
+        // POST: /Coins/Create
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Coin coin)
         {
-            var coin = new Coin
-            {
-                Denomination = decimal.Parse(worksheet.Cells[row, 1].Text),
-                Name = worksheet.Cells[row, 2].Text,
-                Mint = worksheet.Cells[row, 3].Text,
-                Year = int.Parse(worksheet.Cells[row, 4].Text),
-                Grade = worksheet.Cells[row, 5].Text,
-                Notes = worksheet.Cells[row, 6].Text,
-                ReferenceUrl = worksheet.Cells[row, 7].Text
-            };
+            if (!ModelState.IsValid)
+                return View(coin);
 
             await _repo.AddAsync(coin);
+            return RedirectToAction(nameof(Index));
         }
 
-        return RedirectToAction(nameof(Index));
+        // ============================
+        // EXCEL IMPORT
+        // ============================
+
+        // GET: /Coins/Import
+        [Authorize(Roles = "Admin")]
+        public IActionResult Import()
+        {
+            return View();
+        }
+
+        // POST: /Coins/Import
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Import(CoinImportViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            using var stream = model.ExcelFile.OpenReadStream();
+            using var workbook = new XLWorkbook(stream);
+            var worksheet = workbook.Worksheet(1);
+
+            var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
+
+            foreach (var row in rows)
+            {
+                // Your Excel columns: Denomination, Name, Mint, Year, Grade, Notes, Link
+                var coin = new Coin
+                {
+                    Denomination = row.Cell(1).TryGetValue<decimal>(out var denom) ? denom : 0m,
+                    Name = row.Cell(2).GetValue<string>(),
+                    Mint = row.Cell(3).GetValue<string>(),
+                    Year = row.Cell(4).TryGetValue<int>(out var year) ? year : null,
+                    Grade = row.Cell(5).GetValue<string>(),
+                    Notes = row.Cell(6).GetValue<string>(),
+                    ReferenceUrl = row.Cell(13).GetValue<string>()
+                };
+
+                await _repo.AddAsync(coin);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
