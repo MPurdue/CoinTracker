@@ -11,9 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 // ----------------------------
 // Database (SQL Server)
 // ----------------------------
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+var useDb = builder.Configuration.GetValue<bool>("UseDatabase");
+
+if (useDb)
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnection")));
+}
+
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
