@@ -1,0 +1,52 @@
+﻿@model IEnumerable<CoinTracker.Models.CoinPrice>
+
+@{
+    ViewData["Title"] = "Coin Prices";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Coin Prices</h2>
+
+    <!-- Search Form -->
+    <form method="get" class="d-flex">
+        <input type="search"
+               name="search"
+               class="form-control me-2"
+               placeholder="Search prices..."
+               value="@Context.Request.Query["search"]">
+        <button type="submit" class="btn btn-primary">Search</button>
+        @if (!string.IsNullOrEmpty(Context.Request.Query["search"]))
+        {
+            <a asp-action="Index" class="btn btn-secondary ms-2">Clear</a>
+        }
+    </form>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Coin</th>
+            <th>Year</th>
+            <th>Price</th>
+            <th>Date Recorded</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Coin?.Name</td>
+                <td>@p.Coin?.Year</td>
+                <td>@p.Price.ToString("C")</td>
+                <td>@p.RecordedAt.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No prices found matching your search.
+    </div>
+}

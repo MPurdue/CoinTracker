@@ -1,21 +1,22 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-
-namespace CoinTracker.Models;
-
-
-public class CoinPrice
+namespace CoinTracker.Models
 {
-    public int CoinPriceId { get; set; }
-    public int CoinId { get; set; }
+    public class CoinPrice
+    {
+        [Key]
+        [Column("CoinPriceId")]
+        public int Id { get; set; }
 
+        public int CoinId { get; set; }
 
-    [Required]
-    public decimal EstimatedValue { get; set; }
+        [Column("EstimatedValue", TypeName = "decimal(10,2)")]
+        public decimal Price { get; set; }
 
+        [Column("LastUpdated")]
+        public DateTime RecordedAt { get; set; }
 
-    public DateTime LastUpdated { get; set; }
-
-
-    public Coin Coin { get; set; } = null!;
+        public Coin Coin { get; set; } = null!;
+    }
 }

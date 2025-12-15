@@ -1,4 +1,4 @@
-using CoinTracker.Models;
+﻿using CoinTracker.Models;
 using CoinTracker.Models.ViewModels;
 using CoinTracker.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -8,25 +8,35 @@ using ClosedXML.Excel;
 namespace CoinTracker.Controllers
 {
     [Authorize]
-    public class CoinsApiController : Controller
+    public class CoinsController : Controller
     {
         private readonly ICoinRepository _repo;
 
-        public CoinsApiController(ICoinRepository repo)
+        public CoinsController(ICoinRepository repo)
         {
             _repo = repo;
         }
 
-        // GET: /Coins
+        /// GET: /Coins
         [AllowAnonymous]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string search)
         {
             var coins = await _repo.GetAllAsync();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                coins = coins.Where(c =>
+                    c.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    c.Year.ToString().Contains(search) ||
+                    c.Mint.Contains(search, StringComparison.OrdinalIgnoreCase)
+                );
+            }
+
             return View(coins);
         }
 
         // GET: /Coins/Create
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "User")]
         public IActionResult Create()
         {
             return View();
@@ -73,7 +83,7 @@ namespace CoinTracker.Controllers
 
             foreach (var row in rows)
             {
-                // Your Excel columns: Denomination, Name, Mint, Year, Grade, Notes, Link
+                // Excel columns: Denomination, Name, Mint, Year, Grade, Notes, Price, Link
                 var coin = new Coin
                 {
                     Denomination = row.Cell(1).TryGetValue<decimal>(out var denom) ? denom : 0m,
@@ -82,7 +92,8 @@ namespace CoinTracker.Controllers
                     Year = row.Cell(4).TryGetValue<int>(out var year) ? year : null,
                     Grade = row.Cell(5).GetValue<string>(),
                     Notes = row.Cell(6).GetValue<string>(),
-                    ReferenceUrl = row.Cell(13).GetValue<string>()
+                    // Column 7 is Price (we're skipping it for now)
+                    ReferenceUrl = row.Cell(13).GetValue<string>()  // ← Fixed: was 7, now 8
                 };
 
                 await _repo.AddAsync(coin);

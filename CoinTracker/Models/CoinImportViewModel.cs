@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CoinTracker.Models.ViewModels
 {
     public class CoinImportViewModel
     {
         [Required]
-        public required IFormFile ExcelFile { get; set; }
+        [Display(Name = "Excel File")]
+        public IFormFile ExcelFile { get; set; } = null!;
     }
 }

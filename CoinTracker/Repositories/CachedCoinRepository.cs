@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using CoinTracker.Models;
+﻿using CoinTracker.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CoinTracker.Repositories
 {
@@ -8,11 +8,9 @@ namespace CoinTracker.Repositories
         private readonly ICoinRepository _inner;
         private readonly IMemoryCache _cache;
 
-        private const string CACHE_KEY = "coins_all";
+        private const string CacheKey = "coins_all";
 
-        public CachedCoinRepository(
-            ICoinRepository inner,
-            IMemoryCache cache)
+        public CachedCoinRepository(ICoinRepository inner, IMemoryCache cache)
         {
             _inner = inner;
             _cache = cache;
@@ -20,34 +18,34 @@ namespace CoinTracker.Repositories
 
         public async Task<IEnumerable<Coin>> GetAllAsync()
         {
-            if (!_cache.TryGetValue(CACHE_KEY, out IEnumerable<Coin> coins))
+            if (!_cache.TryGetValue(CacheKey, out IEnumerable<Coin>? coins))
             {
                 coins = await _inner.GetAllAsync();
-                _cache.Set(CACHE_KEY, coins, TimeSpan.FromMinutes(5));
+                _cache.Set(CacheKey, coins, TimeSpan.FromMinutes(5));
             }
 
-            return coins;
+            return coins!;
         }
 
-        public Task<Coin?> GetByIdAsync(int id)
-            => _inner.GetByIdAsync(id);
+        public async Task<Coin?> GetByIdAsync(int id)
+            => await _inner.GetByIdAsync(id);
 
         public async Task AddAsync(Coin coin)
         {
             await _inner.AddAsync(coin);
-            _cache.Remove(CACHE_KEY);
+            _cache.Remove(CacheKey);
         }
 
         public async Task UpdateAsync(Coin coin)
         {
             await _inner.UpdateAsync(coin);
-            _cache.Remove(CACHE_KEY);
+            _cache.Remove(CacheKey);
         }
 
         public async Task DeleteAsync(int id)
         {
             await _inner.DeleteAsync(id);
-            _cache.Remove(CACHE_KEY);
+            _cache.Remove(CacheKey);
         }
     }
 }
